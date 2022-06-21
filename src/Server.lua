@@ -6,9 +6,9 @@ if not RunService:IsServer() or not RunService:IsRunning() then
 	return false
 end
 
-local Object = require(Packages.Object)
-local Net = require(Packages.Net)
-local Util = require(Packages.Util)
+local Object = require(Packages.object)
+local Net = require(Packages.net)
+local Util = require(Packages.util)
 
 local Folder = Object:Extend()
 

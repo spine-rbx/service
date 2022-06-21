@@ -6,10 +6,10 @@ if RunService:IsServer() or not RunService:IsRunning() then
 	return false
 end
 
-local Object = require(Packages.Object)
-local Net = require(Packages.Net)
-local Util = require(Packages.Util)
-local Promise = require(Packages.Promise)
+local Object = require(Packages.object)
+local Net = require(Packages.net)
+local Util = require(Packages.util)
+local Promise = require(Packages.promise)
 
 local Service = Object:Extend()
 
