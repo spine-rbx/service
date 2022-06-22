@@ -50,7 +50,7 @@ function Service:Destroy()
 	Service.ServiceList[self._Folder.Name] = nil
 end
 
-function Service.GetService(Name: string): Promise<Service>
+function Service.GetService(Name: string): Promise.Promise
 	if Service.Promises[Name] then
 		return Service.Promises[Name]
 	end
@@ -59,7 +59,7 @@ function Service.GetService(Name: string): Promise<Service>
 		return Promise.resolve(Service.ServiceList[Name])
 	end
 
-	Service.Promises[Name] = Promise.new(function(resolve)
+	Service.Promises[Name] = Promise:New(function(resolve)
 		Service.Yielding[Name] = coroutine.running()
 		coroutine.yield()
 		Service.Promise[Name] = nil
@@ -69,9 +69,9 @@ function Service.GetService(Name: string): Promise<Service>
 	return Service.Promises[Name]
 end
 
-Util.Each(ReplicatedStorage:WaitForChild("SpineServices"), function(Folder: Folder)
+Util.Each(ReplicatedStorage:WaitForChild("SpineServices"), function(Folder)
 	Service:New(Folder)
-end, function(Folder: Folder)
+end, function(Folder)
 	Service.ServiceList[Folder.Name]:Destroy()
 end)
 
@@ -79,10 +79,10 @@ export type Service = Object.Object<{
 	_Folder: Folder,
 	_Connections: {[string]: RBXScriptConnection|() -> ()},
 
-	[string]: Net.Client.RemoteSignal|Net.Client.RemoteCallback|Net.Client.RemoteValue,
+	[string]: Net.ClientRemoteSignal|Net.ClientRemoteCallback|Net.ClientRemoteValue,
 
-	GetService: (Name: string) -> Promise<Service>,
+	GetService: (Name: string) -> (Promise.Promise),
 	Destroy: (self: Service) -> (),
 }>
 
-return Service
+return Service :: Service
