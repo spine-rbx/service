@@ -15,91 +15,74 @@ local Service = Object:Extend()
 
 Service.ServiceList = {}
 Service.Yielding = {}
+Service.Promises = {}
 
-function Service:Constructor(Folder: Folder, IsRoot: boolean)
-	self._Instance = Folder
-	self._Hidden = {}
+function Service:Constructor(Folder: Folder)
+	self._Folder = Folder
 
 	self._Connections = Util.Each(Folder, function(Child)
-		local Name = Child.Name
+		local SpineNetType = Child:GetAttribute("SpineNetType")
 
-		if Child:IsA("Folder") then
-			self[Name] = Service:New(Child, false)
-		else
-			local NetType = Child:GetAttribute("SpineNetType")
-
-			if NetType == 1 then
-				self[Name] = Net.Client.RemoteSignal:New(Child)
-			elseif NetType == 2 then
-				self[Name] = Net.Client.RemotePipe:New(Child)
-			elseif NetType == 3 then
-				self[Name] = Net.Client.RemoteValue:New(Child)
-			elseif NetType == 4 then
-				self._Hidden[Name] = Net.Client.RemoteFunction:New(Child)
-				self[Name] = function(_, ...)
-					return self._Hidden[Name]:InvokeServer(...)
-				end
-			end
+		if SpineNetType == 1 then
+			self[Child.Name] = Net.Client.RemoteSignal:New(Child)
+		elseif SpineNetType == 2 then
+			self[Child.Name] = Net.Client.RemoteCallback:New(Child)
+		elseif SpineNetType == 3 then
+			self[Child.Name] = Net.Client.RemoteValue:New(Child)
 		end
 	end, function(Child)
-		local Name = Child.Name
-
-		if self._Hidden[Name] then
-			self._Hidden[Name]:Destroy()
-			self[Name] = nil
-		else
-			self[Name]:Destroy()
-			self[Name] = nil
-		end
+		self[Child.Name]:Destroy()
+		self[Child.Name] = nil
 	end)
 
-	self._Connections["Destroying"] = Folder.Destroying:Connect(function()
-		self:Destroy()
-	end)
+	Service.ServiceList[Folder.Name] = self
 
-	if IsRoot then
-		self.ServiceList[Folder.Name] = self
-		
-		if self.Yielding[Folder.Name] ~= nil then
-			for _,v in ipairs(self.Yielding[Folder.Name]) do
-				coroutine.resume(v)
-			end
-
-			self.Yielding[Folder.Name] = nil
-		end
+	if Service.Yielding[Folder.Name] then
+		coroutine.resume(Service.Yielding[Folder.Name])
+		Service.Yielding[Folder.Name] = nil
 	end
 end
 
 function Service:Destroy()
-	for _,v in pairs(self.Connections) do
-		v:Disconnect()
-	end
-
+	self._Connections:Disconnect()
 	self._Connections = nil
-	self._Hidden = nil
-	self._Instance = nil
+	self._Folder = nil
+	Service.ServiceList[self._Folder.Name] = nil
 end
 
-function Service.Get(Name: string)
+function Service.GetService(Name: string): Promise<Service>
+	if Service.Promises[Name] then
+		return Service.Promises[Name]
+	end
+
 	if Service.ServiceList[Name] then
 		return Promise.resolve(Service.ServiceList[Name])
 	end
 
-	if Service.Yielding[Name] == nil then
-		Service.Yielding[Name] = {}
-	end
-
-	return Promise.new(function(resolve)
-		Service.Yielding[Name][#Service.Yielding[Name]+1] = coroutine.running()
+	Service.Promises[Name] = Promise.new(function(resolve)
+		Service.Yielding[Name] = coroutine.running()
 		coroutine.yield()
+		Service.Promise[Name] = nil
 		resolve(Service.ServiceList[Name])
 	end)
+
+	return Service.Promises[Name]
 end
 
 Util.Each(ReplicatedStorage:WaitForChild("SpineServices"), function(Folder: Folder)
-	Service:New(Folder, true)
+	Service:New(Folder)
 end, function(Folder: Folder)
 	Service.ServiceList[Folder.Name]:Destroy()
 end)
+
+export type Service = Object.Object<{
+	_Folder: Folder,
+	_Connections: {[string]: RBXScriptConnection|() -> ()},
+
+	[string]: Net.Client.RemoteSignal|Net.Client.RemoteCallback|Net.Client.RemoteValue,
+
+	GetService: (Name: string) -> Promise<Service>,
+	Destroy: (self: Service) -> (),
+}>
 
 return Service
