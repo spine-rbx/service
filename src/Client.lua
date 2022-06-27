@@ -56,7 +56,7 @@ function Service.GetService(Name: string): Promise.Promise
 	end
 
 	if Service.ServiceList[Name] then
-		return Promise.resolve(Service.ServiceList[Name])
+		return Promise.Resolve(Service.ServiceList[Name])
 	end
 
 	Service.Promises[Name] = Promise:New(function(resolve)
