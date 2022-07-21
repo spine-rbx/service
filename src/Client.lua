@@ -1,10 +1,5 @@
-local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = script.Parent.Parent
-
-if RunService:IsServer() or not RunService:IsRunning() then
-	return false
-end
 
 local Object = require(Packages.object)
 local Net = require(Packages.net)
@@ -79,7 +74,7 @@ export type Service = Object.Object<{
 	_Folder: Folder,
 	_Connections: {[string]: RBXScriptConnection|() -> ()},
 
-	[string]: Net.ClientRemoteSignal|Net.ClientRemoteCallback|Net.ClientRemoteValue,
+	[string]: any,
 
 	GetService: (Name: string) -> (Promise.Promise),
 	Destroy: (self: Service) -> (),
