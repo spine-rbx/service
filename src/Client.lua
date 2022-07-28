@@ -6,10 +6,20 @@ local Net = require(Packages.net)
 local Util = require(Packages.util)
 local Promise = require(Packages.promise)
 
+--- @class ClientService
+--- @extends Object
+--- This is one of those classes that isn't explained very well
+--- by simple API documentation. I suggest you read the topic about
+--- services.
 local Service = Object:Extend()
 
+--- @prop ServiceList !! { [string]: [ClientService](/api/clientservice) }
 Service.ServiceList = {}
+
+--- @prop Yielding !! { [string]: thread }
 Service.Yielding = {}
+
+--- @prop Promises !! { [string]: Promise }
 Service.Promises = {}
 
 function Service:Constructor(Folder: Folder)
@@ -45,6 +55,9 @@ function Service:Destroy()
 	Service.ServiceList[self._Folder.Name] = nil
 end
 
+--- @static GetService
+--- @param Name !! string !! 
+--- @return [Promise](/api/promise) !! A promise that resolves with the service.
 function Service.GetService(Name: string): Promise.Promise
 	if Service.Promises[Name] then
 		return Service.Promises[Name]
