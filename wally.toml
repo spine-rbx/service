@@ -1,11 +1,11 @@
 [package]
 name = "spine-rbx/service"
-version = "0.1.10"
+version = "1.0.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
 [dependencies]
-object = "spine-rbx/object@*"
-net = "spine-rbx/net@*"
-util = "spine-rbx/util@*"
-promise = "spine-rbx/promise@*"
+object = "spine-rbx/object@1.0.0"
+net = "spine-rbx/net@1.0.0"
+util = "spine-rbx/util@1.0.0"
+promise = "spine-rbx/promise@1.0.0"

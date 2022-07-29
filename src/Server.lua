@@ -10,6 +10,11 @@ local GlobalFolder = ReplicatedStorage:FindFirstChild("SpineServices") or Util.M
 	Parent = ReplicatedStorage,
 })
 
+--- @class ServerServiceClient
+--- @extends Object
+--- This is one of those classes that isn't explained very well
+--- by simple API documentation. I suggest you read the topic about
+--- services.
 local ServiceClient = Object:Extend()
 
 local VALUE = newproxy()
@@ -17,13 +22,20 @@ local SIGNAL = newproxy()
 local CALLBACK = newproxy()
 
 function ServiceClient:Constructor(Name: string, Server)
+	--- @prop _Name !! string
 	self._Name = Name
+
+	--- @prop _Server !! [ServerService](/api/serverservice)
 	self._Server = Server
+
+	--- @prop _Hidden !! { [string]: [ServerRemoteCallback](/api/serverremotecallback) }
 	self._Hidden = {}
 
 	getmetatable(self).__newindex = self.__newindex
 end
 
+--- @method _Make
+--- This method creates the service folder.
 function ServiceClient:_Make()
 	rawset(self, "_Make", function() end)
 
@@ -37,6 +49,9 @@ function ServiceClient:_Make()
 	)
 end
 
+--- @method __newindex
+--- @param i !! string !! 
+--- @param v !! any !! 
 function ServiceClient:__newindex(i, v)
 	self:_Make()
 
@@ -61,13 +76,26 @@ function ServiceClient:__newindex(i, v)
 	rawset(self, i, v)
 end
 
+--- @class ServerService
+--- @extends Object
+--- This is a service. This is not explained well
+--- by simple API documentation. I suggest you read the topic about
+--- services.
 local Service = Object:Extend()
 
+--- @prop VALUE !! any
 Service.VALUE = VALUE
+
+--- @prop SIGNAL !! any
 Service.SIGNAL = SIGNAL
+
+ --- @prop CALLBACK !! any
 Service.CALLBACK = CALLBACK
 
+--- @constructor
+--- @param Name !! string !! The name of the service.
 function Service:Constructor(Name: string)
+	--- @prop Client !! [ServerServiceClient](/api/serverserviceclient)
 	self.Client = ServiceClient:New(Name, self)
 end
 
